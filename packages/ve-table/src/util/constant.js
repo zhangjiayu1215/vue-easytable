@@ -28,6 +28,8 @@ export const EXPAND_TRIGGER_TYPES = {
 export const EMIT_EVENTS = {
     // body-td-width-change
     BODY_TD_WIDTH_CHANGE: "on-body-td-width-change",
+    // body-td-width-drag-change
+    BODY_TD_WIDTH_DRAG_CHANGE: "on-body-td-width-drag-change",
     // header-tr-height-change
     HEADER_TR_HEIGHT_CHANGE: "on-header-tr-height-change",
     // footer-tr-height-change
@@ -55,7 +57,9 @@ export const EMIT_EVENTS = {
     // header filter confirm
     HEADER_FILTER_CONFIRM: "on-filter-confirm",
     // header filter reset
-    HEADER_FILTER_RESET: "on-filter-reset"
+    HEADER_FILTER_RESET: "on-filter-reset",
+    // width state change
+    WIDTH_STATE_CHANGE: "on-width-state-change"
 };
 
 // comps name

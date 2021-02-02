@@ -134,6 +134,13 @@ const config = [
                 meta: { keepAlive: true }
             },
             {
+                path: "width-drag",
+                component: () =>
+                    import("@/docs/zh/ve-table/width-drag/main.vue"),
+                name: "列宽拖动",
+                meta: { keepAlive: true }
+            },
+            {
                 path: "cell-align",
                 component: () =>
                     import("@/docs/zh/ve-table/cell-align/main.vue"),
@@ -245,7 +252,7 @@ const config = [
                 meta: { keepAlive: true }
             }
         ]
-    },
+    }
     /* {
         path: "other",
         name: "辅助组件",

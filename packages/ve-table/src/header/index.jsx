@@ -50,6 +50,18 @@ export default {
             default: function() {
                 return null;
             }
+        },
+        // border vertical
+        borderY: {
+            type: Boolean,
+            default: false
+        },
+        // width drag option
+        widthDragOption: {
+            type: Object,
+            default: function() {
+                return null;
+            }
         }
     },
     data() {
@@ -58,7 +70,13 @@ export default {
             sort columns
             不要使用computed代替，属性动态添加会造成响应式问题
             */
-            sortColumns: {}
+            sortColumns: {},
+            // is width dragging
+            widthDragging: false,
+            // width dragging start x pos
+            widthDraggingStartX: 0,
+            // width dragging end x pos
+            widthDraggingEndX: 0
         };
     },
     computed: {
@@ -108,12 +126,31 @@ export default {
                 }
             });
             this.sortColumns = sortColumns;
+        },
+
+        // width drag state change
+        widthDragStateChange(params) {
+            const { type, value } = params;
+            if (type === "widthDragging") {
+                this.widthDragging = value;
+            } else if (type === "widthDraggingStartX") {
+                this.widthDraggingStartX = value;
+            } else if (type === "widthDraggingEndX") {
+                this.widthDraggingEndX = value;
+            } else {
+                console.log("widthDragStateChange error");
+            }
         }
     },
     mounted() {
         // receive sort change
         this.$on(EMIT_EVENTS.SORT_CHANGE, params => {
             this.sortChange(params);
+        });
+
+        // receive sort change
+        this.$on(EMIT_EVENTS.WIDTH_STATE_CHANGE, params => {
+            this.widthDragStateChange(params);
         });
     },
     render() {
@@ -128,7 +165,9 @@ export default {
             checkboxOptipon,
             sortOption,
             sortColumns,
-            cellStyleOption
+            cellStyleOption,
+            eventCustomOption,
+            widthDragOption
         } = this;
 
         return (
@@ -146,7 +185,12 @@ export default {
                             sortOption,
                             sortColumns,
                             cellStyleOption,
-                            eventCustomOption: this.eventCustomOption
+                            eventCustomOption,
+                            widthDragOption,
+                            borderY: this.borderY,
+                            widthDragging: this.widthDragging,
+                            widthDraggingStartX: this.widthDraggingStartX,
+                            widthDraggingEndX: this.widthDraggingEndX
                         }
                     };
                     return <HeaderTr {...trProps} />;

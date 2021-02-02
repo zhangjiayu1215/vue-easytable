@@ -466,23 +466,20 @@ export default {
          * @param {number|string} width - column real width
          */
         tdSizeChange({ key, width }) {
-            // 只有固定列才需要计算列宽
-            if (this.hasFixedColumn) {
-                const { colsWidths, cloneTableData, colgroups } = this;
-                colsWidths.set(key, width);
+            const { colsWidths, cloneTableData, colgroups } = this;
+            colsWidths.set(key, width);
 
-                // 优化固定列表格初始化渲染速度慢问题
-                if (!hasPreparedColsWidths) {
-                    if (cloneTableData.length > 0) {
-                        if (++colsWidthsEfficientCount === colgroups.length) {
-                            hasPreparedColsWidths = true;
-                        }
+            // 优化固定列表格初始化渲染速度慢问题
+            if (!hasPreparedColsWidths) {
+                if (cloneTableData.length > 0) {
+                    if (++colsWidthsEfficientCount === colgroups.length) {
+                        hasPreparedColsWidths = true;
                     }
                 }
+            }
 
-                if (hasPreparedColsWidths) {
-                    this.$emit(EMIT_EVENTS.BODY_TD_WIDTH_CHANGE, colsWidths);
-                }
+            if (hasPreparedColsWidths) {
+                this.$emit(EMIT_EVENTS.BODY_TD_WIDTH_CHANGE, colsWidths);
             }
         },
 

@@ -201,6 +201,14 @@
               position: sticky;
               z-index: @ve-fixed-header-cell-index;
             }
+
+            // drag
+            &.ve-table-width-drag {
+              &::before {
+                cursor: crosshair;
+              }
+            }
+
             /* fixed column shadow */
             .ve-fixed-column-shadow();
 

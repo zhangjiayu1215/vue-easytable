@@ -20,7 +20,7 @@ export default {
                     return (
                         <col
                             key={item.key}
-                            style={{ width: this.getValByUnit(item.width) }}
+                            style={{ width: this.getValByUnit(item._realTimeWidth) }}
                         />
                     );
                 })}

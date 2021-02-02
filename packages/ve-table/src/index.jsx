@@ -153,8 +153,15 @@ export default {
                 return null;
             }
         },
-        // edit opttion
+        // edit option
         editOption: {
+            type: Object,
+            default: function() {
+                return null;
+            }
+        },
+        // width drag option
+        widthDragOption: {
             type: Object,
             default: function() {
                 return null;
@@ -477,9 +484,20 @@ export default {
 
         // td width change
         tdWidthChange(colWidths) {
+            console.log("colWidths::", colWidths);
             this.colgroups = this.colgroups.map(item => {
                 // map
                 item._realTimeWidth = colWidths.get(item.key);
+                return item;
+            });
+        },
+
+        // th width change by width drag
+        tdWidthChangeByWidthDrag({ key, width }) {
+            this.colgroups = this.colgroups.map(item => {
+                if (item.key === key) {
+                    item._realTimeWidth = width;
+                }
                 return item;
             });
         },
@@ -949,6 +967,11 @@ export default {
             }
         );
 
+        // td width change by width drag
+        this.$on(EMIT_EVENTS.BODY_TD_WIDTH_DRAG_CHANGE, ({ key, width }) => {
+            this.tdWidthChangeByWidthDrag({ key, width });
+        });
+
         // add key down event listener
         document.addEventListener("keydown", this.dealKeydownEvent);
 
@@ -995,7 +1018,9 @@ export default {
                 sortOption,
                 cellStyleOption,
                 eventCustomOption: this.eventCustomOption,
-                headerRows: this.headerRows
+                headerRows: this.headerRows,
+                widthDragOption: this.widthDragOption,
+                borderY: this.borderY
             }
         };
 

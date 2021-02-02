@@ -2,7 +2,8 @@ import HeaderCheckboxContent from "./header-checkbox-content";
 import HeaderFilterContent from "./header-filter-content";
 import HeaderFilterCustomContent from "./header-filter-custom-content";
 import { getFixedTotalWidthByColumnKey, clsName } from "../util";
-import { getValByUnit } from "../../../src/utils/index.js";
+import { getValByUnit, isBoolean, isFunction } from "../../../src/utils/index";
+import { hasClass } from "../../../src/utils/dom";
 import { COMPS_NAME, COLUMN_TYPES, EMIT_EVENTS } from "../util/constant";
 import emitter from "../../../src/mixins/emitter";
 import VeIcon from "vue-easytable/packages/ve-icon";
@@ -73,6 +74,31 @@ export default {
             default: function() {
                 return null;
             }
+        },
+        // border vertical
+        borderY: {
+            type: Boolean,
+            default: false
+        },
+        // width drag option
+        widthDragOption: {
+            type: Object,
+            default: function() {
+                return null;
+            }
+        },
+        // is width dragging
+        widthDragging: {
+            type: Boolean,
+            default: false
+        },
+        widthDraggingStartX: {
+            type: Number,
+            default: 0
+        },
+        widthDraggingEndX: {
+            type: Number,
+            default: 0
         }
     },
     computed: {
@@ -121,6 +147,16 @@ export default {
         isLastCloumn() {
             const { colgroups, groupColumnItem: column } = this;
             return colgroups[colgroups.length - 1].field === column.field;
+        },
+        // enable width drag
+        enableWidthDrag() {
+            const { widthDragOption } = this;
+
+            return (
+                widthDragOption &&
+                isBoolean(widthDragOption.enable) &&
+                widthDragOption.enable
+            );
         }
     },
     methods: {
@@ -137,19 +173,21 @@ export default {
                 [clsName("last-left-fixed-column")]: this.isLastLeftFixedColumn,
                 [clsName("first-right-fixed-column")]: this
                     .isfirstRightFixedColumn,
-                [clsName("last-column")]: this.isLastCloumn
+                [clsName("last-column")]: this.isLastCloumn,
+                [clsName("width-drag")]: this.enableWidthDrag
             };
 
             const {
                 cellStyleOption,
                 rowData,
                 groupColumnItem,
-                rowIndex
+                rowIndex,
+                widthDragOption
             } = this;
 
             if (
                 cellStyleOption &&
-                typeof cellStyleOption.headerCellClass === "function"
+                isFunction(cellStyleOption.headerCellClass)
             ) {
                 const customClass = cellStyleOption.headerCellClass({
                     column: groupColumnItem,
@@ -159,7 +197,6 @@ export default {
                     result[customClass] = true;
                 }
             }
-
             return result;
         },
         /*
@@ -350,6 +387,138 @@ export default {
             return result;
         },
 
+        // cell mousemove
+        cellMousemove(e) {
+            const { enableWidthDrag, borderY } = this;
+
+            if (enableWidthDrag && borderY) {
+                let target = e.target,
+                    rect;
+
+                while (
+                    target &&
+                    ((target.className &&
+                        !hasClass(target, clsName("width-drag"))) ||
+                        !target.className)
+                ) {
+                    target = target.parentNode;
+                }
+
+                rect = target.getBoundingClientRect();
+
+                const bodyStyle = document.body.style;
+
+                if (rect.right - event.pageX < 10) {
+                    console.log("rect.right::", rect.right);
+                    console.log("event.pageX ::", event.pageX);
+
+                    if (!this.widthDragging) {
+                        // 拖动中不设置
+                        /* this.draggingColumn = this.internalColumns.find(
+                            x => x.field === column
+                        ); */
+                    }
+
+                    bodyStyle.cursor = "col-resize";
+                } else {
+                    if (!this.isDragging) {
+                        // 拖动中不设置
+
+                        this.draggingColumn = null;
+                        bodyStyle.cursor = "";
+                    }
+                }
+            }
+        },
+
+        // cell mousedown
+        cellMousedown(e) {
+            const { enableWidthDrag, borderY } = this;
+
+            if (enableWidthDrag && borderY) {
+                //
+                this.dispatch(
+                    COMPS_NAME.VE_TABLE_THADER,
+                    EMIT_EVENTS.WIDTH_STATE_CHANGE,
+                    {
+                        type: "widthDragging",
+                        value: true
+                    }
+                );
+
+                this.dispatch(
+                    COMPS_NAME.VE_TABLE_THADER,
+                    EMIT_EVENTS.WIDTH_STATE_CHANGE,
+                    {
+                        type: "widthDraggingStartX",
+                        value: e.clientX
+                    }
+                );
+
+                document.onselectstart = function() {
+                    return false;
+                };
+                document.ondragstart = function() {
+                    return false;
+                };
+
+                // add mousemove event listener
+                document.addEventListener(
+                    "mousemove",
+                    this.handleWidthDragMousemove
+                );
+
+                // add mousemove event listener
+                document.addEventListener(
+                    "mouseup",
+                    this.handleWidthDragMouseup
+                );
+            }
+        },
+
+        // cell mouseout
+        cellMouseout(e) {
+            // remove mousemove event listener
+            document.removeEventListener(
+                "mousemove",
+                this.handleWidthDragMousemove
+            );
+
+            // remove mousemove event listener
+            document.removeEventListener(
+                "mouseup",
+                this.handleWidthDragMouseup
+            );
+        },
+
+        // handle width drag mousemove
+        handleWidthDragMousemove(e) {
+            const { groupColumnItem, colgroups } = this;
+
+            const colgroup = colgroups.find(x => x.key === groupColumnItem.key);
+            if (colgroup) {
+                console.log("colgroup.width::", colgroup._realTimeWidth);
+            }
+        },
+
+        // handle width drag mouseup
+        handleWidthDragMouseup(e) {
+            const { groupColumnItem, colgroups } = this;
+
+            const colgroup = colgroups.find(x => x.key === groupColumnItem.key);
+            if (colgroup) {
+                this.dispatch(
+                    COMPS_NAME.VE_TABLE,
+                    EMIT_EVENTS.BODY_TD_WIDTH_DRAG_CHANGE,
+                    {
+                        key: groupColumnItem.key,
+                        width: 500
+                    }
+                );
+                console.log("colgroup.width::", colgroup._realTimeWidth);
+            }
+        },
+
         // cell click
         cellClick(e, fn) {
             fn && fn(e);
@@ -420,6 +589,15 @@ export default {
         } = customEvents;
 
         const events = {
+            mousemove: e => {
+                this.cellMousemove(e);
+            },
+            mousedown: e => {
+                this.cellMousedown(e);
+            },
+            mouseout: e => {
+                this.cellMouseout(e);
+            },
             click: e => {
                 this.cellClick(e, click);
             },

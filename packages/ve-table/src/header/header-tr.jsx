@@ -64,6 +64,31 @@ export default {
             default: function() {
                 return null;
             }
+        },
+        // border vertical
+        borderY: {
+            type: Boolean,
+            default: false
+        },
+        // width drag option
+        widthDragOption: {
+            type: Object,
+            default: function() {
+                return null;
+            }
+        },
+        // is width dragging
+        widthDragging: {
+            type: Boolean,
+            default: false
+        },
+        widthDraggingStartX: {
+            type: Number,
+            default: 0
+        },
+        widthDraggingEndX: {
+            type: Number,
+            default: 0
         }
     },
     methods: {
@@ -175,7 +200,12 @@ export default {
                             sortOption,
                             sortColumns,
                             cellStyleOption,
-                            eventCustomOption: this.eventCustomOption
+                            eventCustomOption: this.eventCustomOption,
+                            widthDragOption: this.widthDragOption,
+                            borderY: this.borderY,
+                            widthDragging: this.widthDragging,
+                            widthDraggingStartX: this.widthDraggingStartX,
+                            widthDraggingEndX: this.widthDraggingEndX
                         }
                     };
 
